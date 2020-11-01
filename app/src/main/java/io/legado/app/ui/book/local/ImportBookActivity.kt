@@ -9,6 +9,7 @@ import android.provider.DocumentsContract
 import android.view.Menu
 import android.view.MenuItem
 import androidx.appcompat.widget.PopupMenu
+import androidx.core.view.isVisible
 import androidx.documentfile.provider.DocumentFile
 import androidx.lifecycle.LiveData
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -164,6 +165,11 @@ class ImportBookActivity : VMBaseActivity<ImportBookViewModel>(R.layout.activity
         rootDoc?.let {
             upDocs(it)
         } ?: upFiles()
+        if (path != sdPath) {
+            tv_go_back.visible()
+        } else {
+            tv_go_back.gone()
+        }
     }
 
     private fun upDocs(rootDoc: DocumentFile) {
@@ -261,6 +267,7 @@ class ImportBookActivity : VMBaseActivity<ImportBookViewModel>(R.layout.activity
                         }
                     }
                 }
+                tv_go_back.visible()
             }
         }
     }
@@ -313,6 +320,9 @@ class ImportBookActivity : VMBaseActivity<ImportBookViewModel>(R.layout.activity
                     upPath()
                     return true
                 }
+            } else if (tv_go_back.isVisible) {
+                upPath()
+                return true
             }
             return false
         }
