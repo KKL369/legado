@@ -19,12 +19,12 @@ import io.legado.app.R
 import io.legado.app.base.VMBaseActivity
 import io.legado.app.constant.AppPattern
 import io.legado.app.data.entities.ReplaceRule
-import io.legado.app.help.BookHelp
 import io.legado.app.help.IntentDataHelp
 import io.legado.app.help.coroutine.Coroutine
-import io.legado.app.lib.dialogs.*
+import io.legado.app.lib.dialogs.alert
 import io.legado.app.lib.theme.ATH
 import io.legado.app.lib.theme.primaryTextColor
+import io.legado.app.service.help.ReadBook
 import io.legado.app.ui.association.ImportReplaceRuleActivity
 import io.legado.app.ui.filepicker.FilePicker
 import io.legado.app.ui.filepicker.FilePickerDialog
@@ -134,9 +134,8 @@ class ReplaceRuleActivity :
     private fun delSourceDialog() {
         alert(titleResource = R.string.draw, messageResource = R.string.sure_del) {
             okButton { viewModel.delSelection(adapter.getSelection()) }
-            noButton { }
-        }
-            .show().applyTint()
+            noButton()
+        }.show()
     }
 
     private fun observeReplaceRuleData(key: String? = null) {
@@ -233,7 +232,7 @@ class ReplaceRuleActivity :
                 }
             }
             cancelButton()
-        }.show().applyTint()
+        }.show()
     }
 
     override fun onQueryTextChange(newText: String?): Boolean {
@@ -262,7 +261,7 @@ class ReplaceRuleActivity :
             }
             exportRequestCode -> if (resultCode == RESULT_OK) {
                 data?.data?.let { uri ->
-                    if (uri.toString().isContentPath()) {
+                    if (uri.isContentScheme()) {
                         DocumentFile.fromTreeUri(this, uri)?.let {
                             viewModel.exportSelection(adapter.getSelection(), it)
                         }
@@ -278,7 +277,7 @@ class ReplaceRuleActivity :
 
     override fun onDestroy() {
         super.onDestroy()
-        Coroutine.async { BookHelp.upReplaceRules() }
+        Coroutine.async { ReadBook.contentProcessor?.upReplaceRules() }
     }
 
     override fun upCountView() {

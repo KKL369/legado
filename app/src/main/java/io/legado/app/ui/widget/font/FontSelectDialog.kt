@@ -28,6 +28,7 @@ import kotlinx.coroutines.Dispatchers.Main
 import kotlinx.coroutines.launch
 import java.io.File
 import java.util.*
+import kotlin.collections.ArrayList
 
 class FontSelectDialog : BaseDialogFragment(),
     FilePickerDialog.CallBack,
@@ -68,7 +69,7 @@ class FontSelectDialog : BaseDialogFragment(),
         if (fontPath.isNullOrEmpty()) {
             openFolder()
         } else {
-            if (fontPath.isContentPath()) {
+            if (fontPath.isContentScheme()) {
                 val doc = DocumentFile.fromTreeUri(requireContext(), Uri.parse(fontPath))
                 if (doc?.canRead() == true) {
                     loadFontFiles(doc)
@@ -150,8 +151,7 @@ class FontSelectDialog : BaseDialogFragment(),
                     fontItems.add(item)
                 }
             }
-            fontItems.addAll(getLocalFonts())
-            fontItems.sortedBy { it.name }
+            mergeFontItems(fontItems, getLocalFonts())
         }.onSuccess {
             adapter?.setItems(it)
         }.onError {
@@ -186,13 +186,33 @@ class FontSelectDialog : BaseDialogFragment(),
                     )
                 )
             }
-            fontItems.addAll(getLocalFonts())
-            fontItems.sortedBy { it.name }
+            mergeFontItems(fontItems, getLocalFonts())
         }.onSuccess {
             adapter?.setItems(it)
         }.onError {
             toast("getFontFiles:${it.localizedMessage}")
         }
+    }
+
+    private fun mergeFontItems(
+        items1: ArrayList<DocItem>,
+        items2: ArrayList<DocItem>
+    ): ArrayList<DocItem> {
+        val items = ArrayList(items1)
+        items2.forEach { item2 ->
+            var isInFirst = false
+            items1.forEach for1@{ item1 ->
+                if (item2.name == item1.name) {
+                    isInFirst = true
+                    return@for1
+                }
+            }
+            if (!isInFirst) {
+                items.add(item2)
+            }
+        }
+        items.sortBy { it.name }
+        return items
     }
 
     override fun onClick(docItem: DocItem) {
@@ -209,7 +229,7 @@ class FontSelectDialog : BaseDialogFragment(),
         when (requestCode) {
             fontFolderRequestCode -> if (resultCode == RESULT_OK) {
                 data?.data?.let { uri ->
-                    if (uri.toString().isContentPath()) {
+                    if (uri.toString().isContentScheme()) {
                         putPrefString(PreferKey.fontFolder, uri.toString())
                         val doc = DocumentFile.fromTreeUri(requireContext(), uri)
                         if (doc != null) {

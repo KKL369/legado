@@ -17,7 +17,7 @@ import io.legado.app.help.ReadBookConfig
 import io.legado.app.help.http.HttpHelper
 import io.legado.app.help.permission.Permissions
 import io.legado.app.help.permission.PermissionsCompat
-import io.legado.app.lib.dialogs.*
+import io.legado.app.lib.dialogs.alert
 import io.legado.app.lib.theme.bottomBackground
 import io.legado.app.lib.theme.getPrimaryTextColor
 import io.legado.app.lib.theme.getSecondaryTextColor
@@ -50,6 +50,7 @@ class BgTextConfigDialog : BaseDialogFragment(), FilePickerDialog.CallBack {
 
     override fun onStart() {
         super.onStart()
+        (activity as ReadBookActivity).bottomDialog++
         dialog?.window?.let {
             it.clearFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND)
             it.setBackgroundDrawableResource(R.color.background)
@@ -79,6 +80,7 @@ class BgTextConfigDialog : BaseDialogFragment(), FilePickerDialog.CallBack {
     override fun onDismiss(dialog: DialogInterface) {
         super.onDismiss(dialog)
         ReadBookConfig.save()
+        (activity as ReadBookActivity).bottomDialog--
     }
 
     private fun initView() {
@@ -131,7 +133,7 @@ class BgTextConfigDialog : BaseDialogFragment(), FilePickerDialog.CallBack {
                     }
                 }
                 cancelButton()
-            }.show().applyTint()
+            }.show()
         }
         sw_dark_status_icon.onCheckedChange { buttonView, isChecked ->
             if (buttonView?.isPressed == true) {
@@ -248,7 +250,7 @@ class BgTextConfigDialog : BaseDialogFragment(), FilePickerDialog.CallBack {
             }
             val configZipPath = FileUtils.getPath(requireContext().eCacheDir, configFileName)
             if (ZipUtils.zipFiles(exportFiles, File(configZipPath))) {
-                if (uri.isContentPath()) {
+                if (uri.isContentScheme()) {
                     DocumentFile.fromTreeUri(requireContext(), uri)?.let { treeDoc ->
                         treeDoc.findFile(configFileName)?.delete()
                         treeDoc.createFile("", configFileName)
@@ -283,8 +285,8 @@ class BgTextConfigDialog : BaseDialogFragment(), FilePickerDialog.CallBack {
                     importNetConfig(url)
                 }
             }
-            noButton { }
-        }.show().applyTint()
+            noButton()
+        }.show()
     }
 
     private fun importNetConfig(url: String) {
@@ -391,7 +393,7 @@ class BgTextConfigDialog : BaseDialogFragment(), FilePickerDialog.CallBack {
     }
 
     private fun setBgFromUri(uri: Uri) {
-        if (uri.toString().isContentPath()) {
+        if (uri.toString().isContentScheme()) {
             val doc = DocumentFile.fromSingleUri(requireContext(), uri)
             doc?.name?.let {
                 val file =

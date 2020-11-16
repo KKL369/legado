@@ -151,7 +151,7 @@ class CacheActivity : VMBaseActivity<CacheViewModel>(R.layout.activity_download)
                 val chapterCaches = hashSetOf<String>()
                 val cacheNames = BookHelp.getChapterFiles(book)
                 App.db.bookChapterDao().getChapterList(book.bookUrl).forEach { chapter ->
-                    if (cacheNames.contains(BookHelp.formatChapterName(chapter))) {
+                    if (cacheNames.contains(chapter.getFileName())) {
                         chapterCaches.add(chapter.url)
                     }
                 }
@@ -207,7 +207,7 @@ class CacheActivity : VMBaseActivity<CacheViewModel>(R.layout.activity_download)
         when (requestCode) {
             exportRequestCode -> if (resultCode == Activity.RESULT_OK) {
                 data?.data?.let { uri ->
-                    if (uri.isContentPath()) {
+                    if (uri.isContentScheme()) {
                         contentResolver.takePersistableUriPermission(
                             uri,
                             Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION

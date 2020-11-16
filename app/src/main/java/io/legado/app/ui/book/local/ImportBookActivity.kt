@@ -129,7 +129,7 @@ class ImportBookActivity : VMBaseActivity<ImportBookViewModel>(R.layout.activity
                 tv_empty_msg.visible()
                 FilePicker.selectFolder(this, requestCodeSelectFolder)
             }
-            lastPath.isContentPath() -> {
+            lastPath.isContentScheme() -> {
                 val rootUri = Uri.parse(lastPath)
                 rootDoc = DocumentFile.fromTreeUri(this, rootUri)
                 if (rootDoc == null) {
@@ -283,7 +283,7 @@ class ImportBookActivity : VMBaseActivity<ImportBookViewModel>(R.layout.activity
         when (requestCode) {
             requestCodeSelectFolder -> if (resultCode == Activity.RESULT_OK) {
                 data?.data?.let { uri ->
-                    if (uri.isContentPath()) {
+                    if (uri.isContentScheme()) {
                         contentResolver.takePersistableUriPermission(
                             uri,
                             Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION
@@ -303,7 +303,7 @@ class ImportBookActivity : VMBaseActivity<ImportBookViewModel>(R.layout.activity
 
     @Synchronized
     override fun nextDoc(uri: Uri) {
-        if (uri.toString().isContentPath()) {
+        if (uri.toString().isContentScheme()) {
             subDocs.add(DocumentFile.fromSingleUri(this, uri)!!)
         } else {
             path = uri.path.toString()
